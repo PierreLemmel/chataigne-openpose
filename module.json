@@ -1,0 +1,313 @@
+{
+    "name": "OpenPose",
+    "type": "OSC",
+    "path": "Open Pose",
+    "version": "1.0.0",
+    "description": "Get tracking data from OpenPose",
+    "hasInput": true,
+    "hasOutput": true,
+    "url": "https://github.com/PierreLemmel/chataigne-openpose",
+    "downloadURL": "TODO: ADD DOWNLOAD URL",
+
+    "hideDefaultParameters": [
+        "autoRange",
+        "autoFeedback",
+        "useHierarchy",
+        "colorSendMode",
+        "booleanSendMode",
+        "clearValues",
+        "pass_through"
+    ],
+    "defaults": {
+        "OSC Input": {
+			"localPort": 12000
+		},
+		"OSC Outputs": {
+			"OSC Output": {
+				"Remote port": 12001
+			}
+		}
+    },
+    "hideDefaultCommands": true,
+
+    "scripts": [
+        "openpose.js"
+    ],
+
+    "parameters": {
+        "Open Pose": {
+            "type": "Container",
+            
+            "Launch Script": {
+                "type": "File",
+                "default": "",
+                "description": "Path to the OpenPose launch script (launch.bat)"
+            },
+
+            "Preview": {
+                "type": "Boolean",
+                "default": true,
+                "description": "Show the OpenPose preview window"
+            },
+
+            "Threshold": {
+                "type": "Float",
+                "default": 0.2,
+                "description": "Threshold for the OpenPose tracking",
+                "min": 0,
+                "max": 1
+            }
+        }
+    },
+
+    "values": {
+
+        "Person 1": {
+            "type": "Container",
+            
+            "Nose tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Nose position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Neck tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Neck position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right shoulder tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right shoulder position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right elbow tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right elbow position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right wrist tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right wrist position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left shoulder tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left shoulder position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left elbow tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left elbow position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left wrist tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left wrist position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right hip tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right hip position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right knee tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right knee position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right ankle tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right ankle position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left hip tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left hip position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left knee tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left knee position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left ankle tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left ankle position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right eye tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right eye position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Left eye tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left eye position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+
+            "Right ear tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Right ear position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            },
+            
+            "Left ear tracked": {
+                "type": "Boolean",
+                "readOnly": true,
+                "default": false
+            },
+            "Left ear position": {
+                "type": "Point2D",
+                "readOnly": true,
+                "min": [0, 0],
+                "max": [1, 1],
+                "default": [0.5, 0.5]
+            }
+        }
+    },
+
+    "commands": {
+        "Start tracking": {
+            "menu": "",
+            "callback": "startTracking",
+            "parameters": {
+                
+            }
+        }
+    }
+}
