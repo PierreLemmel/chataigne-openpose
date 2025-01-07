@@ -1,3 +1,4 @@
+import time
 import cv2 as cv
 import argparse
 
@@ -7,6 +8,9 @@ from pythonosc import osc_server
 from pythonosc import osc_bundle_builder
 from pythonosc import osc_message_builder
 import threading
+import atexit
+import signal
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', required=True, help='Path to the binary .pb file.')
@@ -23,7 +27,7 @@ args = parser.parse_args()
 BODY_PARTS = { "Nose": 0, "Neck": 1, "RShoulder": 2, "RElbow": 3, "RWrist": 4,
                "LShoulder": 5, "LElbow": 6, "LWrist": 7, "RHip": 8, "RKnee": 9,
                "RAnkle": 10, "LHip": 11, "LKnee": 12, "LAnkle": 13, "REye": 14,
-               "LEye": 15, "REar": 16, "LEar": 17, "Background": 18 }
+               "LEye": 15, "REar": 16, "LEar": 17 }
 
 POSE_PAIRS = [ ["Neck", "RShoulder"], ["Neck", "LShoulder"], ["RShoulder", "RElbow"],
                ["RElbow", "RWrist"], ["LShoulder", "LElbow"], ["LElbow", "LWrist"],
@@ -40,12 +44,13 @@ threshold = args.threshold
 preview = args.preview != 0
 ip = args.ip
 
-print(preview)
 
 winName = "OpenPose using OpenCV"
 request_win_delete = False
+request_stop = False
 
 osc_client = udp_client.SimpleUDPClient(ip, oscOut)
+osc_client.send_message("/openpose/started", [])
 
 def on_threshold_changed(_, *args):
     globals().update(threshold=float(args[0]))
@@ -57,22 +62,37 @@ def on_preview_changed(_, *args):
     if not new_preview:
         globals().update(request_win_delete=True)
 
+def on_stop_requested(_, *args):
+    globals().update(request_stop=True)
 
+server: osc_server.ThreadingOSCUDPServer = None
 def start_server():
     dispatcher = Dispatcher()
     dispatcher.map("/openpose/threshold", on_threshold_changed)
     dispatcher.map("/openpose/preview", on_preview_changed)
+    dispatcher.map("/openpose/stop", on_stop_requested)
 
     server = osc_server.ThreadingOSCUDPServer((ip, oscIn), dispatcher)
 
     print(f"Starting OSC server on {ip}:{oscIn}...")
+    
+    globals().update(server=server)
     server.serve_forever()
-    print("OSC server started...")
+    print("OSC server stopped...")
+    
+
+def start_keepalive():
+    while not request_stop:
+        osc_client.send_message("/openpose/keepalive", [])
+        time.sleep(1)
 
 server_thread = threading.Thread(target=start_server)
 server_thread.daemon = True
 server_thread.start()
 
+keepalive_thread = threading.Thread(target=start_keepalive)
+keepalive_thread.daemon = True
+keepalive_thread.start()
 
 
 net = cv.dnn.readNetFromTensorflow(model)
@@ -82,7 +102,25 @@ cap = cv.VideoCapture(0)
 
 points = []
 
-while cv.waitKey(1) < 0:
+
+def cleanup():
+    print("Stopping OpenPose using OpenCV...")
+    osc_client.send_message("/openpose/stopped", [])
+
+    cap.release()
+    cv.destroyAllWindows()
+
+    print("Stopping OSC server...")
+    server.shutdown()
+    server_thread.join()
+
+    print("OpenPose using OpenCV finished...")
+
+atexit.register(cleanup)
+signal.signal(signal.SIGINT, cleanup)
+signal.signal(signal.SIGTERM, cleanup)
+
+while cv.waitKey(10) < 0 and not request_stop:
     hasFrame, frame = cap.read()
     if not hasFrame:
         cv.waitKey()
@@ -93,7 +131,7 @@ while cv.waitKey(1) < 0:
     
     net.setInput(cv.dnn.blobFromImage(frame, 1.0, (inWidth, inHeight), (127.5, 127.5, 127.5), swapRB=True, crop=False))
     out = net.forward()
-    out = out[:, :19, :, :]  # MobileNet output [1, 57, -1, -1], we only need the first 19 elements
+    out = out[:, :18, :, :]  # MobileNet output [1, 57, -1, -1], we only need the first 19 elements
 
     outWidth = out.shape[3]
     outHeight = out.shape[2]
@@ -118,8 +156,9 @@ while cv.waitKey(1) < 0:
     )
     
     for idx, point in enumerate(points):
-        msg = osc_message_builder.OscMessageBuilder(f"/pose/person1/{idx}")
+        msg = osc_message_builder.OscMessageBuilder("/openpose/person1")
 
+        msg.add_arg(idx)
         if point:
             msg.add_arg(True)
             msg.add_arg(point[0])
@@ -129,8 +168,18 @@ while cv.waitKey(1) < 0:
 
         bundle.add_content(msg.build())
     
-    osc_client.send(bundle.build())
+    t, _ = net.getPerfProfile()
+    freq = cv.getTickFrequency()
+    fps = freq / t
+    processingTimeMs = 1000 / fps
 
+    msg = osc_message_builder.OscMessageBuilder("/openpose/profiling")
+    msg.add_arg(fps)
+    msg.add_arg(processingTimeMs)
+
+    bundle.add_content(msg.build())
+
+    osc_client.send(bundle.build())
 
     if preview:
 
@@ -153,10 +202,9 @@ while cv.waitKey(1) < 0:
                 cv.ellipse(frame, pointFrom, (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
                 cv.ellipse(frame, pointTo, (3, 3), 0, 0, 360, (0, 0, 255), cv.FILLED)
 
-        t, _ = net.getPerfProfile()
-        freq = cv.getTickFrequency() / 1000
-        cv.putText(frame, '%.2fms' % (t / freq), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-        cv.putText(frame, 'Threshold: %.2f' % (threshold), (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+        cv.putText(frame, 'Processing: %.2fms' % (processingTimeMs), (10, 20), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+        cv.putText(frame, 'FPS: %.2f' % (fps), (10, 40), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+        cv.putText(frame, 'Threshold: %.2f' % (threshold), (10, 60), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
     
         cv.imshow(winName, frame)
 
@@ -165,9 +213,6 @@ while cv.waitKey(1) < 0:
             cv.destroyAllWindows()
             request_win_delete = False
         
-
-
     points.clear()
 
 
-print("OpenPose using OpenCV finished...")

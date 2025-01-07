@@ -35,6 +35,18 @@
     ],
 
     "parameters": {
+        "Open Pose Running": {
+            "type": "Boolean",
+            "readOnly": true,
+            "default": false
+        },
+        "Start Open Pose": {
+            "type": "Trigger"
+        },
+        "Stop Open Pose": {
+            "type": "Trigger"
+        },
+        
         "Open Pose": {
             "type": "Container",
             
@@ -53,7 +65,7 @@
             "Threshold": {
                 "type": "Float",
                 "default": 0.2,
-                "description": "Threshold for the OpenPose tracking",
+                "description": "Threshold for the OpenPose tracking. A smaller value will track more points but errors are more likely to occur.",
                 "min": 0,
                 "max": 1
             }
@@ -298,16 +310,35 @@
                 "max": [1, 1],
                 "default": [0.5, 0.5]
             }
+        },
+
+        "Profiling": {
+            "type": "Container",
+            
+            "FPS": {
+                "type": "Float",
+                "readOnly": true,
+                "default": 0,
+                "description": "Frames per second"
+            },
+
+            "Processing time": {
+                "type": "Float",
+                "readOnly": true,
+                "default": 0,
+                "description": "Time to process a frame (in ms)"
+            }
         }
     },
 
     "commands": {
         "Start tracking": {
             "menu": "",
-            "callback": "startTracking",
-            "parameters": {
-                
-            }
+            "callback": "startTracking"
+        },
+        "Stop tracking": {
+            "menu": "",
+            "callback": "stopTracking"
         }
     }
 }
