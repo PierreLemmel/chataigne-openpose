@@ -7,7 +7,7 @@
     "hasInput": true,
     "hasOutput": true,
     "url": "https://github.com/PierreLemmel/chataigne-openpose",
-    "downloadURL": "TODO: ADD DOWNLOAD URL",
+    "downloadURL": "https://github.com/PierreLemmel/chataigne-openpose/releases/download/Server/chataigne-openpose-server.zip",
 
     "hideDefaultParameters": [
         "autoRange",
