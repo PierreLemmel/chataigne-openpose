@@ -20,11 +20,7 @@ For further details check:
 
 To install Chataigne-OpenPose, follow these steps:
 
-1. Clone the current repository
-
-    ```bash
-    git clone https://github.com/PierreLemmel/chataigne-openpose.git
-    ```
+1. [Download the server content](https://github.com/PierreLemmel/chataigne-openpose/releases/download/Server/chataigne-openpose-server.zip)
 2. Inside the *server* folder, Run the installation script *install.bat*
 3. Add the OpenPose module inside Chataigne
 4. In OpenPose settings, specify the path to the *openpose-server.bat* file
